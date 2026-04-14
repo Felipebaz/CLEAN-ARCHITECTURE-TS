@@ -1,5 +1,5 @@
 import { Order } from '@domain/entities/Order';
-import { OrderRepository } from '@application/ports/OrderRepository';
+import type { OrderRepository } from '@application/ports/OrderRepository';
 
 export type CreateOrderInput = { orderId: string; customerId:string;}
 export type CreateOrderOutput = { orderId: string;}

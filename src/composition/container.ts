@@ -1,5 +1,5 @@
 import { InMemoryOrderRepository } from '@infrastructure/persistence/InMemoryOrderRepository';
-import { CreateOrder } from '@application/usecases/CreateOrderUseCase';
+import { CreateOrderUseCase } from '@application/use-cases/CreateOrderUseCase';
 
 const repo = new InMemoryOrderRepository();
-export const createOrder = new CreateOrder(repo);
+export const createOrder = new CreateOrderUseCase(repo);

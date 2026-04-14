@@ -4,11 +4,17 @@
     // File Layout
       "rootDir": ".",
       "outDir": "./dist",
-      "baseUrl": "",
+      "baseUrl": ".",
+    "paths": {
+      "@domain/*": ["src/domain/*"],
+      "@application/*": ["src/application/*"],
+      "@infrastructure/*": ["src/infrastructure/*"]
+    },
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "es2022",
     "types": [],
     // For nodejs:
