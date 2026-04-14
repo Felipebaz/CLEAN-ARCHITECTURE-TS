@@ -1,6 +1,11 @@
 import { Price } from '@domain/value-objects/Price';
 import { SKU } from '@domain/value-objects/SKU';
 import { Quantity } from '@domain/value-objects/Quantity';
+import { CurrencyMismatch } from '@domain/errors/DomainError';
+import { DomainEvent } from '@domain/events/DomainEvent';
+import { OrderCreatedEvent } from '@domain/events/OrderCreatedEvent';
+import { OrderId } from '@domain/value-objects/OrderId';
+import { CustomerId } from '@domain/value-objects/CustomerId';
 
 type OrderItem = Readonly<{
     sku: SKU;
