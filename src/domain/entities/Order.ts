@@ -3,7 +3,7 @@ import { SKU } from '../value-objects/SKU.js';
 import { Quantity } from '../value-objects/Quantity.js';
 import { OrderId } from '../value-objects/OrderId.js';
 import { CustomerId } from '../value-objects/CustomerId.js';
-import type { Currency } from '../value-objects/Currency.js';
+import { Currency } from '../value-objects/Currency.js';
 import { CurrencyMismatch } from '../errors/DomainError.js';
 import type { DomainEvent } from '../events/DomainEvent.js';
 import { OrderCreatedEvent } from '../events/OrderCreatedEvent.js';
@@ -17,7 +17,6 @@ type OrderItem = Readonly<{
 
 export class Order {
     private readonly items: OrderItem[] = [];
-    // No readonly: necesita reasignarse en pullDomainEvents
     private domainEvents: DomainEvent[] = [];
 
     private constructor(
@@ -28,7 +27,7 @@ export class Order {
 
     /**
      * Crea un nuevo pedido y registra OrderCreatedEvent.
-     * Usar este factory en lugar del constructor para pedidos nuevos.
+     * Único punto de entrada para pedidos nuevos.
      */
     static create(id: OrderId, customerId: CustomerId, currency: Currency): Order {
         const order = new Order(id, customerId, currency);
@@ -39,15 +38,20 @@ export class Order {
     /**
      * Reconstituye un pedido desde persistencia sin emitir eventos.
      */
-    static reconstitute(id: OrderId, customerId: CustomerId, currency: Currency, items: OrderItem[]): Order {
+    static reconstitute(
+        id: OrderId,
+        customerId: CustomerId,
+        currency: Currency,
+        items: ReadonlyArray<OrderItem>,
+    ): Order {
         const order = new Order(id, customerId, currency);
         order.items.push(...items);
         return order;
     }
 
     addItem(sku: SKU, qty: Quantity, unit: Price): void {
-        if (unit.currency !== this.currency) {
-            throw new CurrencyMismatch(this.currency, unit.currency);
+        if (!this.currency.equals(unit.currency)) {
+            throw new CurrencyMismatch(this.currency.code, unit.currency.code);
         }
         this.items.push(Object.freeze({ sku, qty, unit }));
         this.record(new ItemAddedEvent(this.id, sku, qty, unit));
@@ -60,10 +64,6 @@ export class Order {
         );
     }
 
-    /**
-     * Devuelve los eventos acumulados y vacía la lista interna.
-     * Debe llamarse una sola vez al finalizar la operación.
-     */
     pullDomainEvents(): DomainEvent[] {
         const events = [...this.domainEvents];
         this.domainEvents = [];

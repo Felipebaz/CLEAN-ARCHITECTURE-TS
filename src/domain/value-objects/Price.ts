@@ -1,11 +1,13 @@
-import type { Currency } from './Currency.js';
+import { Currency } from './Currency.js';
 import { CurrencyMismatch, InvalidQuantity } from '../errors/DomainError.js';
 
-// Re-exportados para que los tests que importan desde este módulo no rompan
 export { CurrencyMismatch, InvalidQuantity };
 
 export class Price {
-    private constructor(readonly amount: number, readonly currency: Currency) {}
+    private constructor(
+        readonly amount: number,
+        readonly currency: Currency,
+    ) {}
 
     static create(amount: number, currency: Currency): Price {
         if (!Number.isFinite(amount) || amount < 0) {
@@ -15,13 +17,13 @@ export class Price {
     }
 
     add(other: Price): Price {
-        if (this.currency !== other.currency) {
-            throw new CurrencyMismatch(this.currency, other.currency);
+        if (!this.currency.equals(other.currency)) {
+            throw new CurrencyMismatch(this.currency.code, other.currency.code);
         }
         return Price.create(this.amount + other.amount, this.currency);
     }
 
-    /** qty debe ser un entero positivo. Si se pasa un Quantity VO, usar qty.value. */
+    /** qty debe ser un entero no negativo. Si se pasa un Quantity VO, usar qty.value. */
     multiply(qty: number): Price {
         if (!Number.isInteger(qty) || qty < 0) {
             throw new InvalidQuantity(qty);
@@ -30,6 +32,6 @@ export class Price {
     }
 
     equals(other: Price): boolean {
-        return this.amount === other.amount && this.currency === other.currency;
+        return this.amount === other.amount && this.currency.equals(other.currency);
     }
 }

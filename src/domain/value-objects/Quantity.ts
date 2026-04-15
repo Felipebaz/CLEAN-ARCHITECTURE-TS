@@ -10,6 +10,10 @@ export class Quantity {
         return new Quantity(value);
     }
 
+    add(other: Quantity): Quantity {
+        return Quantity.create(this.value + other.value);
+    }
+
     equals(other: Quantity): boolean {
         return this.value === other.value;
     }
