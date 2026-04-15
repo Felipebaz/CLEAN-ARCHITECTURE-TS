@@ -1,44 +1,35 @@
-import type { Currency } from "./Currency.ts";
+import type { Currency } from './Currency.js';
+import { CurrencyMismatch, InvalidQuantity } from '../errors/DomainError.js';
 
-export class CurrencyMismatch extends Error {
-    constructor(expected: Currency, actual: Currency) {
-        super(`Currency mismatch: expected ${expected}, got ${actual}`);
-        Object.setPrototypeOf(this, CurrencyMismatch.prototype);
-    }
-}
-
-export class InvalidQuantity extends Error {
-    constructor(qty: number) {
-        super(`Invalid quantity: ${qty}`);
-        Object.setPrototypeOf(this, InvalidQuantity.prototype);
-    }
-}
+// Re-exportados para que los tests que importan desde este módulo no rompan
+export { CurrencyMismatch, InvalidQuantity };
 
 export class Price {
-    private constructor (readonly amount: number, readonly currency: Currency) {}
+    private constructor(readonly amount: number, readonly currency: Currency) {}
 
-    static create(amount: number, currency: Currency){
-        if(!Number.isFinite(amount) || amount < 0){
-            throw new Error("Amount must be a positive number");
+    static create(amount: number, currency: Currency): Price {
+        if (!Number.isFinite(amount) || amount < 0) {
+            throw new Error('Amount must be a positive number');
         }
-        const roundedAmount = Math.round(amount * 100) / 100;
-        return new Price(roundedAmount, currency);
+        return new Price(Math.round(amount * 100) / 100, currency);
     }
-    add(other: Price){
-        if(this.currency !== other.currency){
+
+    add(other: Price): Price {
+        if (this.currency !== other.currency) {
             throw new CurrencyMismatch(this.currency, other.currency);
         }
         return Price.create(this.amount + other.amount, this.currency);
     }
 
-    multiply(qty: number){
-        if(!Number.isInteger(qty) || qty < 0){
+    /** qty debe ser un entero positivo. Si se pasa un Quantity VO, usar qty.value. */
+    multiply(qty: number): Price {
+        if (!Number.isInteger(qty) || qty < 0) {
             throw new InvalidQuantity(qty);
         }
         return Price.create(this.amount * qty, this.currency);
     }
 
-    equals(other: Price){
+    equals(other: Price): boolean {
         return this.amount === other.amount && this.currency === other.currency;
     }
 }
