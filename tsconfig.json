@@ -1,11 +1,12 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
-      "rootDir": ".",
-      "outDir": "./dist",
-      "baseUrl": ".",
-    "paths": {
+  // File Layout
+    "rootDir": ".",
+    "outDir": "./dist",
+    "baseUrl": ".",
+    // Silence TS deprecation warning about baseUrl until TS 7
+  "paths": {
       "@domain/*": ["src/domain/*"],
       "@application/*": ["src/application/*"],
       "@infrastructure/*": ["src/infrastructure/*"]
@@ -13,14 +14,11 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "target": "es2022",
-    "types": [],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
+    "module": "NodeNext",
+    // Ensure moduleResolution matches `module` when using NodeNext
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "types": ["node"],
 
     // Other Outputs
     "sourceMap": true,
@@ -49,5 +47,6 @@
     "skipLibCheck": true,
   },
   "include": ["src/**/*.ts", "main.ts"],
-  "exclude": ["node_modules", "dist", "tests"]
+  // repo folder is `test` (singular) so exclude that
+  "exclude": ["node_modules", "dist", "test"]
 }
