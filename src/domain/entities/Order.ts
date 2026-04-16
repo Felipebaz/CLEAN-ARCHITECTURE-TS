@@ -64,6 +64,11 @@ export class Order {
         );
     }
 
+    /** Solo para uso del repositorio — snapshot de los items actuales. */
+    getItems(): ReadonlyArray<{ sku: SKU; qty: Quantity; unit: Price }> {
+        return [...this.items];
+    }
+
     pullDomainEvents(): DomainEvent[] {
         const events = [...this.domainEvents];
         this.domainEvents = [];
