@@ -2,6 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist",
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@domain/*":         ["src/domain/*"],

@@ -11,6 +11,4 @@ export class PinoLogger implements Logger {
     error(message: string, meta?: Record<string, unknown>) {
         this.log.error(meta ?? {}, message);
     }
-
-    // Implement other methods from the Logger interface
 }
