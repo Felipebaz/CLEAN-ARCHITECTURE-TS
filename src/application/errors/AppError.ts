@@ -36,7 +36,9 @@ export type AppError = ValidationError | NotFoundError | ConflictError | InfraEr
 
 export const AppError = {
     validation(message: string, field?: string): ValidationError {
-        return { kind: 'validation', message, field };
+        return field !== undefined
+            ? { kind: 'validation', message, field }
+            : { kind: 'validation', message };
     },
     notFound(resource: string, id: string): NotFoundError {
         return { kind: 'not_found', resource, id };

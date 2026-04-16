@@ -62,7 +62,7 @@ export class AddItemToOrderUseCase {
         // 4. Añadir el item al aggregate
         try {
             order.addItem(sku, qty, unitPrice);
-        } catch (e) {
+        } catch (e: unknown) {
             if (e instanceof DomainError) {
                 return err(AppError.validation(e.message));
             }

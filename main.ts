@@ -1,24 +1,22 @@
-import { Pool } from 'pg';
-import { buildServer } from '@infrastructure/http/server';
 import { buildContainer } from '@composition/container';
+import { buildServer } from '@infrastructure/http/server';
 
 async function main() {
     const container = buildContainer();
-    const server = buildServer(container);
-    
-    const port = Number(container.cfg.PORT);
-    const address = await server.listen({ port });
-    container.ports?.events && container.cfg.USE_IN_MEMORY_DB === 'false' && console.log("Outbox ready");
+    const server    = await buildServer(container);
 
-    const shutdown = async( signal: string) => {
-        container.logger.info(`Received ${signal}, shutting down...`);
+    const port = Number(process.env['PORT'] ?? 3000);
+    await server.listen({ port, host: '0.0.0.0' });
+    container.ports.logger.info(`Server listening on port ${port}`);
+
+    const shutdown = async (signal: string) => {
+        container.ports.logger.info(`${signal} received — shutting down`);
         await server.close();
-        if (container.pool) await container.pool.end();
         process.exit(0);
-    }
+    };
 
-    process.on('SIGINT', () => shutdown('SIGINT'));
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT',  () => { void shutdown('SIGINT'); });
+    process.on('SIGTERM', () => { void shutdown('SIGTERM'); });
 }
 
-main().catch(err => {console.error(err); process.exit(1)});
+main().catch(err => { console.error(err); process.exit(1); });

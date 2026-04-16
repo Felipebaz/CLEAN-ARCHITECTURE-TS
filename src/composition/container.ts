@@ -1,30 +1,25 @@
-import { loadConfig } from '@compostition/config';
-import { InMemoryOrderRepository } from '@infrastructure/persistence/in-memory/InMemoryOrderRepository';
-import { PostgresOrderRespository } from "@infrastructure/persistence/postgres/PostgresOrderRepository";
-import { HttpPricingService } from "@infrastructure/http/HttpPricingService";
-import { OutboxEventBus } from '@infrastructure/mesagging/OutboxEventBus';
-import { AddItemToOrder} from '@application/use-cases/AddItemToOrder';
+import { InMemoryOrderRepository } from '@infrastructure/persistence/InMemoryOrderRepository';
+import { StaticPricingService } from '@infrastructure/pricing/StaticPricingService';
+import { NoopEventBus } from '@infrastructure/mesagging/NoopEventBus';
+import { ConsoleLogger } from '@infrastructure/http/observabillity/ConsoleLogger';
 import { CreateOrderUseCase } from '@application/use-cases/CreateOrderUseCase';
-import { PinoLogger } from '@infrastructure/http/observabillity/PinoLogger';
-import { Pool } from 'pg';
-
+import { AddItemToOrderUseCase } from '@application/use-cases/AddItemToOrderUseCase';
 
 export function buildContainer() {
-    const cfg = loadConfig();
-    const logger = new PinoLogger();
-    const pool = cfg.USE_IN_MEMORY_DB === 'true' ? null : new Pool({ connectionString: cfg.DATABASE_URL });
-    const orders = cfg.USE_IN_MEMORY_DB === 'true' ? new InMemoryOrderRepository() : new PostgresOrderRespository(pool);
-    const pricingService = new HttpPricingService(cfg.PRICING_BASE_URL);
-    const eventBus = cfg.USE_IN_MEMORY_DB === 'true' ? {publish: async () => {}} : new OutboxEventBus(orders);
-    const clock = {now: () => new Date()};
+    // Puertos
+    const orders   = new InMemoryOrderRepository();
+    const pricing  = new StaticPricingService();
+    const eventBus = new NoopEventBus();
+    const logger   = new ConsoleLogger();
 
-    const createOrder = new CreateOrderUseCase(orders, eventBus);
-    const addItemToOrder = new AddItemToOrder(orders, pricingService, eventBus, clock);
+    // Casos de uso
+    const createOrder    = new CreateOrderUseCase(orders, eventBus, logger);
+    const addItemToOrder = new AddItemToOrderUseCase(orders, pricing, eventBus, logger);
 
-    return {cfg, logger, pool,
-        ports: {orders, pricingService, eventBus, clock},
-        useCases: {createOrder, addItemToOrder}
-    };  
+    return {
+        ports:    { orders, pricing, eventBus, logger },
+        useCases: { createOrder, addItemToOrder },
+    };
 }
-export type AppContainer = ReturnType<typeof buildContainer>;
 
+export type AppContainer = ReturnType<typeof buildContainer>;
